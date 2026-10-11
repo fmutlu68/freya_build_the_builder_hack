@@ -36,6 +36,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-run", type=Path, required=True)
     parser.add_argument("--artifact", default="codex-workflow.local.json")
+    parser.add_argument("--produced-name", help="Name used for this artifact in the Codex workspace")
+    parser.add_argument("--producer-command", help="Completed Codex command that wrote the artifact")
     parser.add_argument("--out", type=Path, default=Path("runs"))
     args = parser.parse_args(argv)
     source = args.source_run.resolve()
@@ -47,10 +49,16 @@ def main(argv=None):
     if not all(path.is_file() for path in (artifact, trace, spec_file)):
         parser.error("source run artifact, real Codex trace, or effective OpenAPI missing")
     events = [json.loads(line) for line in trace.read_text().splitlines() if line.strip()]
+    produced_name = args.produced_name or args.artifact
     if not any(event.get("type") == "item.completed" and
-               "workflow.local.json" in str(event.get("item", {}).get("command", ""))
+               produced_name in str(event.get("item", {}).get("command", ""))
                for event in events):
         parser.error("Codex trace does not record the workflow artifact")
+    if args.producer_command and not any(
+            event.get("type") == "item.completed" and
+            args.producer_command in str(event.get("item", {}).get("command", "")) and
+            event.get("item", {}).get("exit_code") == 0 for event in events):
+        parser.error("Codex trace does not record successful artifact generation")
     if (source / "candidate.json").exists():
         parser.error("source run already created a candidate; never duplicate an ambiguous create")
     spec = json.loads(spec_file.read_text())
@@ -67,6 +75,7 @@ def main(argv=None):
     out.mkdir(parents=True)
     state = {"status": "validated_locally", "started_at": timestamp(), "source_run": str(source),
              "source_artifact": str(artifact), "artifact_sha256": digest(artifact),
+             "codex_artifact_name": produced_name,
              "source_trace": str(trace), "trace_sha256": digest(trace),
              "effective_openapi_sha256": digest(spec_file), "workflow_name": name,
              "candidate": None}
