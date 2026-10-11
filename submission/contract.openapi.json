@@ -1,0 +1,125 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Freya Bank voice statement services",
+    "version": "2026-10-01",
+    "description": "Machine-readable request interface derived from final/sources/documents/2026-10-01-service-contract.md. The source contract and fixtures govern response semantics."
+  },
+  "servers": [{ "url": "https://api.freyabank.example" }],
+  "components": {
+    "schemas": {
+      "Call": {
+        "type": "object",
+        "properties": {
+          "ani": { "type": "string" },
+          "lang": { "type": "string", "enum": ["tr"] }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/voice/v1/cards.list": {
+      "post": {
+        "operationId": "cardsList",
+        "requestBody": { "content": { "application/json": { "schema": {
+          "type": "object", "required": ["data", "call"],
+          "properties": {
+            "data": { "type": "object", "required": ["customerNo"], "properties": {
+              "customerNo": { "type": "string" }, "aiFlow": { "type": "string" }
+            } },
+            "call": { "$ref": "#/components/schemas/Call" }
+          }
+        } } } },
+        "responses": { "200": { "description": "See source contract and test fixtures" } }
+      }
+    },
+    "/voice/v1/cards.balance": {
+      "post": {
+        "operationId": "cardsBalance",
+        "requestBody": { "content": { "application/json": { "schema": {
+          "type": "object", "required": ["data", "call"],
+          "properties": {
+            "data": { "type": "object", "required": ["cardNumber"], "properties": { "cardNumber": { "type": "string" } } },
+            "call": { "$ref": "#/components/schemas/Call" }
+          }
+        } } } },
+        "responses": { "200": { "description": "See source contract and test fixtures" } }
+      }
+    },
+    "/voice/v1/statement.week.get": {
+      "post": {
+        "operationId": "statementWeekGet",
+        "requestBody": { "content": { "application/json": { "schema": {
+          "type": "object", "required": ["data", "call"],
+          "properties": {
+            "data": { "type": "object", "required": ["cardNumber"], "properties": { "cardNumber": { "type": "string" } } },
+            "call": { "$ref": "#/components/schemas/Call" }
+          }
+        } } } },
+        "responses": { "200": { "description": "See source contract and test fixtures" } }
+      }
+    },
+    "/voice/v1/statement.week.decide": {
+      "post": {
+        "operationId": "statementWeekDecide",
+        "requestBody": { "content": { "application/json": { "schema": {
+          "type": "object", "required": ["data", "call"],
+          "properties": {
+            "data": { "type": "object", "required": ["cardNumber", "newStatementWeek", "statementDay"], "properties": {
+              "cardNumber": { "type": "string" }, "newStatementWeek": { "type": "integer", "enum": [1, 2, 3, 4] }, "statementDay": { "type": "integer" }
+            } },
+            "call": { "$ref": "#/components/schemas/Call" }
+          }
+        } } } },
+        "responses": { "200": { "description": "Preview only; see source contract" } }
+      }
+    },
+    "/voice/v1/statement.week.change": {
+      "post": {
+        "operationId": "statementWeekChange",
+        "requestBody": { "content": { "application/json": { "schema": {
+          "type": "object", "required": ["data", "call"],
+          "properties": {
+            "data": { "type": "object", "required": ["cardNumber", "newStatementWeek", "statementDay"], "properties": {
+              "cardNumber": { "type": "string" }, "newStatementWeek": { "type": "integer", "enum": [1, 2, 3, 4] }, "statementDay": { "type": "integer" }
+            } },
+            "call": { "$ref": "#/components/schemas/Call" }
+          }
+        } } } },
+        "responses": { "200": { "description": "Commit only after explicit confirmation; see source contract" } }
+      }
+    },
+    "/voice/v1/contact.email.get": {
+      "post": {
+        "operationId": "contactEmailGet",
+        "requestBody": { "content": { "application/json": { "schema": {
+          "type": "object", "required": ["data", "call"],
+          "properties": {
+            "data": { "type": "object", "required": ["customerNo", "intAddressInfoType"], "properties": {
+              "customerNo": { "type": "string" }, "intAddressInfoType": { "type": "string", "enum": ["E", "P", "B"] }
+            } },
+            "call": { "$ref": "#/components/schemas/Call" }
+          }
+        } } } },
+        "responses": { "200": { "description": "See source contract and test fixtures" } }
+      }
+    },
+    "/voice/v1/statement.pdf.send": {
+      "post": {
+        "operationId": "statementPdfSend",
+        "requestBody": { "content": { "application/json": { "schema": {
+          "type": "object", "required": ["data", "call"],
+          "properties": {
+            "data": { "type": "object", "required": ["customerNo", "cardNumber", "currencyType", "statementDate", "emailAddress"], "properties": {
+              "customerNo": { "type": "string" }, "cardNumber": { "type": "string" },
+              "currencyType": { "type": "string", "enum": ["TL", "USD", "EUR", "GBP"] },
+              "statementDate": { "type": "string" }, "emailAddress": { "type": "string" }
+            } },
+            "call": { "$ref": "#/components/schemas/Call" }
+          }
+        } } } },
+        "responses": { "200": { "description": "See source contract and test fixtures" } }
+      }
+    }
+  }
+}
