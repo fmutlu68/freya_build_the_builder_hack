@@ -11,8 +11,8 @@
     }
   ],
   "repo": "https://github.com/fmutlu68/freya_build_the_builder_hack.git",
-  "commit": "d25c222",
-  "run_command": "python3 -m builder.run --case-folder final --openapi submission/contract.openapi.json --mock-base-url https://freya-bank-mock-final-20261011-9a3f21.freya-bank-mock-25.workers.dev --model gpt-6.1-sol --reasoning-effort medium",
+  "commit": "02c56eb",
+  "run_command": "python3 -m builder.run --case-folder final --openapi submission/contract.openapi.json --mock-base-url https://freya-bank-mock-final-20261011-9a3f21.freya-bank-mock-25.workers.dev --model gpt-6.1-sol --reasoning-effort medium --prior-candidate submission/prior-candidate.workflow.json --feedback submission/repair-feedback.md --budget-seconds 1500 --export-reserve-seconds 180",
   "workflow": "submission/final.workflow.json",
   "trace": "submission/final.trace.jsonl",
   "mock_url": "https://freya-bank-mock-final-20261011-9a3f21.freya-bank-mock-25.workers.dev"
