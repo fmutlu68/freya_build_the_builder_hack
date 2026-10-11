@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "freya-bank-mock-final-20261011-9a3f21",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-11",
+  "workers_dev": true
+}
