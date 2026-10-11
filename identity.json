@@ -1,0 +1,168 @@
+{
+  "name": "identity",
+  "node_type": "conversation",
+  "role_message": "",
+  "task_message": "You are the digital assistant of Freya Bank. Your only job here is to verify the customer's identity. Speak English, one or two short sentences per turn.\nOnce the customer confirms who they are, ask for their date of birth, then the last four digits of their phone number, and call verify_identity for each answer.\nYou do not know why the bank is calling. If asked, say you can explain after the security check.\nIf the identity check fails, say goodbye, ending with \"Have a good day.\"",
+  "on_enter": {
+    "type": "tts",
+    "text": "Hello, this is the digital assistant of Freya Bank. Am I speaking with {{title}} {{last_name}}?"
+  },
+  "on_enter_first_entry_only": false,
+  "passthrough": false,
+  "interruptible": false,
+  "return_to_previous_on_interrupt": false,
+  "disable_inactivity_monitor": false,
+  "max_node_turns": 80,
+  "max_turn_transition": null,
+  "passthrough_default_transition": null,
+  "idle_config": null,
+  "stt_overrides": null,
+  "vad_overrides": null,
+  "confidence_reask_override": null,
+  "smart_turn_override": null,
+  "reasoning_override": null,
+  "digit_node_override": null,
+  "digit_continuation_enabled": false,
+  "expected_digits": null,
+  "expected_field_kinds": null,
+  "digit_hold_secs": null,
+  "digit_hold_rules": null,
+  "truncation_strategy": "keep_all",
+  "truncation_window_size": 10,
+  "extraction_schema": [],
+  "assertions": [],
+  "response_mapping": [],
+  "suppress_tool_results": false,
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "verify_identity",
+        "handler": "__function__:api_call",
+        "description": "Check one security answer. Call it once for each answer the customer gives.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/verify_identity"
+            },
+            "body": {
+              "type": "object",
+              "required": [
+                "field",
+                "answer"
+              ],
+              "properties": {
+                "field": {
+                  "enum": [
+                    "date_of_birth",
+                    "phone_last4"
+                  ],
+                  "type": "string",
+                  "default": "{{field}}",
+                  "description": "Which answer this is."
+                },
+                "answer": {
+                  "type": "string",
+                  "default": "{{answer}}",
+                  "description": "date_of_birth as YYYY-MM-DD, phone_last4 as four digits."
+                },
+                "customer_id": {
+                  "type": "string",
+                  "default": "{{customer_id}}"
+                }
+              }
+            },
+            "method": {
+              "enum": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+              ],
+              "type": "string",
+              "default": "POST"
+            },
+            "headers": {
+              "type": "object",
+              "properties": {
+                "Content-Type": {
+                  "type": "string",
+                  "default": "application/json"
+                }
+              }
+            }
+          }
+        }
+      },
+      "config": {
+        "timeoutMs": 12000,
+        "maxRetries": 0
+      },
+      "response_mapping": []
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "end_call",
+        "handler": "__function__:end_call",
+        "description": "Ends the call. You normally do NOT call this: the phrase \"Have a good day.\" ends the call by itself. Call it without any text only if the customer answers after your goodbye.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "message_mode": {
+              "type": "string",
+              "default": "none"
+            },
+            "interruptible": {
+              "type": "boolean",
+              "default": true
+            },
+            "trigger_pattern": {
+              "type": "string",
+              "default": "Have a good day|have a good day"
+            },
+            "trigger_timeout": {
+              "type": "number",
+              "default": 3
+            },
+            "trigger_pattern_both": {
+              "type": "string",
+              "default": "goodbye|bye|have a good day|you too|thank you|thanks|take care"
+            }
+          }
+        }
+      },
+      "config": {
+        "timeoutMs": 10000
+      }
+    }
+  ],
+  "pre_actions": [],
+  "transitions": [
+    {
+      "target_node": "collection",
+      "description": "both security answers verified",
+      "condition": {
+        "logic": "or",
+        "conditions": [
+          {
+            "variable": "verify_identity_response.data.all_verified",
+            "operator": "equals",
+            "operand": "true",
+            "mode": "exact"
+          },
+          {
+            "variable": "verify_identity_response.data.all_verified",
+            "operator": "equals",
+            "operand": "True",
+            "mode": "exact"
+          }
+        ]
+      },
+      "is_tool_call": false
+    }
+  ]
+}

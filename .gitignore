@@ -1,0 +1,13 @@
+env.sh
+.env
+.env.*
+!env.example
+__pycache__/
+*.pyc
+.personas.json
+.freya-agents.json
+results/
+traces/
+.aws/
+runs/
+freya-public-runner.tar.gz
