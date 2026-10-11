@@ -176,16 +176,6 @@ the generated extractor fields, state assignments, and transitions together
 for this multi-turn path; a prompt alone cannot preserve a value that was never
 extracted. Prioritize an unrelated or third-party request according to the
 sources without treating it as consent for the pending action.
-When ownership or authorization changes the outcome, extract the target's
-relationship to the caller separately from the requested action. An explicit
-request concerning someone else's account must not disappear merely because
-the intent classifier labels the action as a transaction switch. If ownership
-is unclear, ask only the needed clarification; never perform the action for an
-unverified target. Carry the relevant security explanation into the spoken
-response. Resolve stage-dependent routing from the sources: a request made
-before the caller's own action and one made after its completion may have
-different destinations. Treat a concrete example as evidence for its specific
-context, not as a global replacement for an older general rule.
 
 No hidden practice cases or answer key are available. Practice bank supports only
 the published PUB cases. Do not invent customer-session endpoints or simulate a
