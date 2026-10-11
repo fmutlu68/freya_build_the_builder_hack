@@ -180,11 +180,15 @@ class Run:
         sources = [p.resolve() for p in a.briefs]
         case_folder = getattr(a, "case_folder", None)
         case_files = sorted(p for p in case_folder.resolve().rglob("*") if p.is_file()) if case_folder else []
-        self.state["inputs"] = [{"path": str(p), "sha256": digest(p)} for p in sources + [api_file] + case_files]
+        repair_files = [a.prior_candidate.resolve(), a.feedback.resolve()] if a.prior_candidate else []
+        self.state["inputs"] = [{"path": str(p), "sha256": digest(p)} for p in sources + [api_file] + case_files + repair_files]
         self.write("summary.json", self.state)
         inputs = self.out / "inputs"; inputs.mkdir()
         for i, p in enumerate(sources): shutil.copyfile(p, inputs / f"brief-{i}{p.suffix}")
         (inputs / "openapi.json").write_text(json.dumps(spec, indent=2, ensure_ascii=False))
+        if a.prior_candidate:
+            shutil.copyfile(a.prior_candidate.resolve(), inputs / "prior-candidate.workflow.json")
+            shutil.copyfile(a.feedback.resolve(), inputs / "feedback.md")
         if case_folder:
             case = inputs / "case"
             shutil.copytree(case_folder.resolve(), case)
@@ -211,6 +215,12 @@ class Run:
                           "Use the customer fixture overview for coverage; do not embed customer fixture records in the workflow. "
                           "Generate the complete workflow for these documents. Final response must be ONLY raw workflow JSON. "
                           "Do not deploy or run simulations. Do not access any file outside this directory.\n")
+                if a.prior_candidate:
+                    prompt += ("This is a bounded repair of inputs/prior-candidate.workflow.json using the observed failure "
+                               "in inputs/feedback.md. Preserve independently working behavior and source-backed rules. "
+                               "Resolve the failure from the supplied case documents and OpenAPI; do not embed the "
+                               "test utterance, fixture identity, or expected answer as a special case. Produce a complete "
+                               "new workflow JSON, not a patch, and record the evidence and decisions in requirements.md.\n")
                 if attempt:
                     prompt += "Repair the previous attempt using previous.workflow.json and validation-errors.json.\n"
                     (work / "validation-errors.json").write_text(json.dumps(errors, indent=2))
@@ -291,6 +301,8 @@ def main(argv=None):
     p.add_argument("--case-folder", type=Path, help="Snapshot all case sources, including PDF text, for this run")
     p.add_argument("--openapi", required=True, type=Path)
     p.add_argument("--mock-base-url", help="Override the OpenAPI server with the deployed mock base URL")
+    p.add_argument("--prior-candidate", type=Path, help="Existing workflow JSON to repair in a new isolated run")
+    p.add_argument("--feedback", type=Path, help="Observed failure evidence for a bounded repair")
     p.add_argument("--model", required=True, help="Exact Codex model ID; no fallback")
     p.add_argument("--reasoning-effort", required=True, choices=["low", "medium", "high", "xhigh", "max", "ultra"])
     p.add_argument("--out", type=Path, default=ROOT / "runs")
@@ -303,7 +315,8 @@ def main(argv=None):
     if not 0 <= a.max_repairs <= 5: p.error("max-repairs must be 0..5")
     if not a.briefs and not a.case_folder: p.error("supply brief files or --case-folder")
     if a.case_folder and not a.case_folder.is_dir(): p.error(f"Missing case folder: {a.case_folder}")
-    for path in a.briefs + [a.openapi]:
+    if bool(a.prior_candidate) != bool(a.feedback): p.error("--prior-candidate and --feedback must be used together")
+    for path in a.briefs + [a.openapi] + ([a.prior_candidate, a.feedback] if a.prior_candidate else []):
         if not path.is_file(): p.error(f"Missing input: {path}")
     run = Run(a)
     def timeout(signum, frame):
