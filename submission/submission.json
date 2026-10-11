@@ -1,13 +1,17 @@
 {
-  "team": "Furkan Mutlu",
+  "team": "241B",
   "members": [
     {
       "name": "Furkan Mutlu",
       "email": "furkan68mutlu@gmail.com"
+    },
+    {
+      "name": "Berat Kayalık",
+      "email": "beratkayalik3@gmail.com"
     }
   ],
   "repo": "https://github.com/fmutlu68/freya_build_the_builder_hack.git",
-  "commit": "3164f117f3c386d903dae10cdc3ad513f9b06653",
+  "commit": "d25c222",
   "run_command": "python3 -m builder.run --case-folder final --openapi submission/contract.openapi.json --mock-base-url https://freya-bank-mock-final-20261011-9a3f21.freya-bank-mock-25.workers.dev --model gpt-6.1-sol --reasoning-effort medium",
   "workflow": "submission/final.workflow.json",
   "trace": "submission/final.trace.jsonl",
